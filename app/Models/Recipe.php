@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Product extends Model
+class Recipe extends Model
 {
     use HasFactory;
 
@@ -13,19 +13,18 @@ class Product extends Model
         'name',
         'description',
         'image',
-        'category_id',
     ];
 
-    public function category()
+    public function products()
     {
-        return $this->belongsTo(Category::class);
-    }
-
-    public function recipes()
-    {
-        return $this->belongsToMany(Recipe::class, 'recipe_products', 'product_id', 'recipe_id')
+        return $this->belongsToMany(Product::class, 'recipe_products', 'recipe_id', 'product_id')
                     ->using(RecipeProduct::class)
                     ->withPivot('quantity');
-
     }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+
 }

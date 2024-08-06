@@ -5,12 +5,13 @@
 	<h1>Tous les produits</h1>
 
 	<p>
-		<a href="{{ route('products.create') }}" title="Créer un article" >Créer un nouveau produit</a>
+		<a href="{{ route('products.create') }}" title="Créer un produit" >Créer un nouveau produit</a>
 	</p>
 	<table >
 		<thead>
 			<tr>
 				<th>Produits</th>
+				<th>Categorie</th>
 				<th colspan="2" >Opérations</th>
 			</tr>
 		</thead>
@@ -18,8 +19,13 @@
 			@foreach ($products as $product)
 			<tr>
 				<td>
-					<a href="{{ route('products.show', $product) }}" title="Fiche produit" >{{ $product->nom }}</a>
+					<a href="{{ route('products.show', $product) }}" title="Fiche produit" >{{ $product->name }}</a>
 				</td>
+
+				<td>
+					<p>{{ $product->category->name }}</p>
+				</td>
+
 				<td>
 					<a href="{{ route('products.edit', $product) }}" title="Modifier le produit" >Modifier</a>
 				</td>
@@ -34,5 +40,5 @@
 			@endforeach
 		</tbody>
 	</table>
-	
+
 @endsection

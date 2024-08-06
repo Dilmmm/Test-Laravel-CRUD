@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -13,8 +14,7 @@ class ProductController extends Controller
      */
     public function index()
     {
-        
-    $products = Product::all();
+        $products = Product::with('category')->get();
 
     return view("product.liste", compact("products"));
     }
@@ -24,7 +24,8 @@ class ProductController extends Controller
      */
     public function create()
     {
-       return view("product.edit");
+        $categories = Category::distinct()->get();
+       return view("product.edit", compact("categories"));
     }
 
     /**
@@ -35,26 +36,25 @@ class ProductController extends Controller
         $this->validate($request, [
             'name' => 'bail|required|string|max:255',
             "picture" => 'bail|image|max:1024',
-            "content" => 'bail|required',
-            'categorie_id' => 'bail|integer|exists:categories,id',
+            "description" => 'bail|required',
+            'category_id' => 'bail|integer|exists:categories,id',
         ]);
-    
+
 
         $chemin_image = 'Aucune image';
 
-    
+
         if ($request->hasFile('picture')) {
             $filename = time() . '.' . $request->picture->extension();
             $chemin_image = $request->picture->storeAs('products', $filename, 'public');
         }
-        
+
         Product::create([
-            "nom" => $request->name,
-            "description" => $request->content,
+            "name" => $request->name,
+            "description" => $request->description,
             "image" => $chemin_image,
-            'categorie_id' => 1,
-            //'categorie_id' => $request->categorie_id,
-            
+            'category_id' => $request->category_id,
+
         ]);
 
 
@@ -74,7 +74,8 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-        return view("product.edit", compact("product"));
+        $categories = Category::distinct()->get();
+        return view("product.edit", compact("product", "categories"));
     }
 
     /**
@@ -84,30 +85,32 @@ class ProductController extends Controller
     {
         $rules = [
             'name' => 'bail|required|string|max:255',
-            'content' => 'bail|required',
+            'description' => 'bail|required',
+            'category_id' => 'bail|integer|exists:categories,id',
         ];
 
         if ($request->hasFile('picture')) {
             $rules['picture'] = 'bail|required|image|max:1024';
         }
-    
+
         $this->validate($request, $rules);
-    
+
         if ($request->hasFile('picture')) {
             if ($product->image && $product->image !== 'Aucune image') {
                 Storage::disk('public')->delete($product->image);
             }
-    
+
             $filename = time() . '.' . $request->picture->extension();
             $chemin_image = $request->picture->storeAs('products', $filename, 'public');
         }
 
         $product->update([
-            'nom' => $request->name,
-            'description' => $request->content,
+            'name' => $request->name,
+            'description' => $request->description,
+            'category_id' => $request->category_id,
             'image' => isset($chemin_image) ? $chemin_image : $product->image,
         ]);
-    
+
         return redirect(route('products.show', $product));
     }
 

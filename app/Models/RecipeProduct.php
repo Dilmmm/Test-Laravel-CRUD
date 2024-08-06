@@ -4,17 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class Categorie extends Model
+class RecipeProduct extends Pivot
 {
     use HasFactory;
 
     protected $fillable = [
-        'name',
+        'recipe_id',
+        'product_id',
+        'quantity',
     ];
-
-    public function products()
-    {
-        return $this->hasMany(Product::class, 'categorie_id');
-    }
 }
