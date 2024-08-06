@@ -1,58 +1,69 @@
-@extends("layouts.app")
-@section("title", isset($recipe) ? "Éditer une Recette" : "Ajouter une Recette")
-@section("content")
+@extends('layouts.app')
 
-    <h1>{{ isset($recipe) ? "Éditer une Recette" : "Ajouter une Recette" }}</h1>
+@section('title', isset($recipe) ? 'Éditer la Recette' : 'Ajouter une Recette')
+
+@section('content')
+    <h1>{{ isset($recipe) ? 'Éditer une Recette' : 'Ajouter une Recette' }}</h1>
 
     <form method="POST" action="{{ isset($recipe) ? route('recipes.update', $recipe) : route('recipes.store') }}" enctype="multipart/form-data">
         @csrf
-        @if(isset($recipe))
+        @if (isset($recipe))
             @method('PUT')
         @endif
 
         <p>
             <label for="name">Nom</label><br/>
-            <input type="text" name="name" value="{{ isset($recipe->name) ? $recipe->name : old('name') }}" id="name" placeholder="Nom de la recette">
-        @error("name")
-            <div>{{ $message }}</div>
-        @enderror
+            <input type="text" name="name" value="{{ isset($recipe->name) ? $recipe->name : old('name') }}" id="name" placeholder="Le nom de la recette" >
+            @error('name')
+                <div>{{ $message }}</div>
+            @enderror>
         </p>
 
         <p>
             <label for="description">Description</label><br/>
-            <textarea name="description" id="description" rows="10" cols="50" placeholder="Description de la recette">{{ isset($recipe->description) ? $recipe->description : old('description') }}</textarea>
-        @error("description")
-        <div>{{ $message }}</div>
-        @enderror
+            <textarea name="description" id="description" lang="fr" rows="10" cols="50" placeholder="Description de la recette">{{ isset($recipe->description) ? $recipe->description : old('description') }}</textarea>
+        @error('description')
+            <div>{{ $message }}</div>
+        @enderror>
         </p>
-        @if(isset($recipe->image))
-            <p>
-                <span>Image actuelle</span><br/>
-                <img src="{{ asset('storage/'.$recipe->image) }}" alt="image de la recette actuelle" style="max-height: 200px;" >
-            </p>
-        @endif
 
         <p>
             <label for="picture">Photo</label><br/>
             <input type="file" name="picture" id="picture">
-        @error("picture")
-        <div>{{ $message }}</div>
-        @enderror
+            @error('picture')
+                <div>{{ $message }}</div>
+            @enderror>
         </p>
 
-        <label>Produits</label><br/>
-        <div id="products">
-            @foreach ( $products as $product )
-                <div>
-                    <input type="checkbox" name="products[{{ $product->id }}][id]" value="{{ $product->id }}"
-                        {{ (isset($recipe) && $recipe->products->contains($product->id)) || (old('products.'.$product->id.'.id') == $product->id) ? 'checked' : '' }}>
-                    <label>{{ $product->name }}</label>
-                    <input type="number" name="products[{{ $product->id }}][quantity]" value="{{ isset($recipe) ? $recipe->products->find($product->id)->pivot->quantity : old('products.'.$product->id.'.quantity') }}" placeholder="Quantité">
-                </div>
-            @endforeach
+        @if(isset($recipe->image))
+            <p>
+                <span>Image actuelle</span><br/>
+                <img src="{{ asset('storage/' . $recipe->image) }}" alt="image de la recette actuelle" style="max-height: 200px;">
+            </p>
+        @endif
+
+        <h3>Ingrédients</h3>
+        @for ($i = 0; $i < 10; $i++)
+        <div class="ingredient">
+            <select name="products[]">
+                <option value="">-- Choisir un produit --</option>
+                @foreach ($products as $product)
+                    <option value="{{ $product->id }}"
+                            @if(isset($recipe->products[$i]) && $recipe->products[$i]->pivot->product_id == $product->id)
+                                selected
+                           @endif>
+                        {{ $product->name }}
+                    </option>
+                @endforeach
+            </select>
+            <input type="number" name="quantities[]"
+                   value="{{ isset($recipe->products[$i]) ? $recipe->products[$i]->pivot->quantity : '' }}"
+                   placeholder="Quantité">
         </div>
+        @endfor
 
-        <input type="submit" value="Valider">
+        <p>
+            <input type="submit" name="valider" value="Valider">
+        </p>
     </form>
-
 @endsection

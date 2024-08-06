@@ -32,12 +32,11 @@ class RecipeController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'name' => 'bail|required|string|max:255',
-            'description' => 'bail|required',
-            'products' => 'required|array',
-            'products.*.id' => 'bail|required|integer|exists:products,id',
-            'products.*.quantity' => 'bail|required|integer|min:1',
-            "picture" => 'bail|image|max:1024',
+            'name' => 'required|string|max:255',
+            'picture' => 'image|max:1024',
+            'description' => 'required',
+            'products.*' => 'nullable|integer|exists:products,id',
+            'quantities.*' => 'nullable|integer|min:1',
         ]);
 
         $chemin_image = 'Aucune image';
@@ -48,17 +47,20 @@ class RecipeController extends Controller
         }
 
         $recipe = Recipe::create([
-            "name" => $request->name,
-            "description" => $request->description,
-            "image" => $chemin_image,
+            'name' => $request->name,
+            'description' => $request->description,
+            'image' => $chemin_image,
         ]);
 
-        foreach ($request->products as $product) {
-            $recipe->products()->attach($product['id'], ['quantity' => $product['quantity']]);
+        $products = $request->input('products', []);
+        $quantities = $request->input('quantities', []);
+        for ($i = 0; $i < count($products); $i++) {
+            if ($products[$i] && $quantities[$i]) {
+                $recipe->products()->attach($products[$i], ['quantity' => $quantities[$i]]);
+            }
         }
 
-        return redirect()->route('recipes.index')->with('success', 'Recette créée avec succès.');
-
+        return redirect()->route('recipes.index');
     }
 
     /**
@@ -84,12 +86,11 @@ class RecipeController extends Controller
     public function update(Request $request, Recipe $recipe)
     {
         $this->validate($request, [
-            'name' => 'bail|required|string|max:255',
-            'description' => 'bail|required',
-            'products' => 'required|array',
-            'products.*.id' => 'bail|required|integer|exists:products,id',
-            'products.*.quantity' => 'bail|required|integer|min:1',
-            "picture" => 'bail|image|max:1024',
+            'name' => 'required|string|max:255',
+            'picture' => 'image|max:1024',
+            'description' => 'required',
+            'products.*' => 'nullable|integer|exists:products,id',
+            'quantities.*' => 'nullable|integer|min:1',
         ]);
 
         $chemin_image = $recipe->image;
@@ -100,15 +101,18 @@ class RecipeController extends Controller
         }
 
         $recipe->update([
-            "name" => $request->name,
-            "description" => $request->description,
-            "image" => $chemin_image,
+            'name' => $request->name,
+            'description' => $request->description,
+            'image' => $chemin_image,
         ]);
 
         $recipe->products()->detach();
-
-        foreach ($request->products as $product) {
-            $recipe->products()->attach($product['id'], ['quantity' => $product['quantity']]);
+        $products = $request->input('products', []);
+        $quantities = $request->input('quantities', []);
+        for ($i = 0; $i < count($products); $i++) {
+            if ($products[$i] && $quantities[$i]) {
+                $recipe->products()->attach($products[$i], ['quantity' => $quantities[$i]]);
+            }
         }
 
         return redirect()->route('recipes.index')->with('success', 'Recette mise à jour avec succès.');
