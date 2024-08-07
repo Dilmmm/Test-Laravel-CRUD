@@ -43,7 +43,7 @@ class RecipeController extends Controller
         $validProducts = [];
 
         $filteredProducts = array_filter($products, fn($product) => !is_null($product) && $product !== '');;
-        $filteredQuantities = array_filter($quantities, fn($value) => !is_null($value) && $value !== '');
+        $filteredQuantities = array_filter($quantities, fn($quantity) => !is_null($quantity) && $quantity !== '');
 
 
         foreach ($filteredProducts as $key => $product) {
