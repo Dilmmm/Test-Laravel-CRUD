@@ -11,41 +11,40 @@
             @method('PUT')
         @endif
 
-        <p>
+        <div>
             <label for="name">Nom</label><br/>
-            <input type="text" name="name" value="{{ isset($recipe->name) ? $recipe->name : old('name') }}" id="name" placeholder="Le nom de la recette" >
+            <input type="text" name="name" value="{{ isset($recipe->name) ? $recipe->name : old('name') }}" id="name" placeholder="Le nom de la recette">
             @error('name')
                 <div>{{ $message }}</div>
             @enderror>
-        </p>
-
-        <p>
+        </div>
+        <div>
             <label for="description">Description</label><br/>
             <textarea name="description" id="description" lang="fr" rows="10" cols="50" placeholder="Description de la recette">{{ isset($recipe->description) ? $recipe->description : old('description') }}</textarea>
         @error('description')
             <div>{{ $message }}</div>
         @enderror>
-        </p>
+        </div>
 
-        <p>
+        <div>
             <label for="picture">Photo</label><br/>
             <input type="file" name="picture" id="picture">
             @error('picture')
                 <div>{{ $message }}</div>
             @enderror>
-        </p>
+        </div>
 
         @if(isset($recipe->image))
-            <p>
+            <div>
                 <span>Image actuelle</span><br/>
                 <img src="{{ asset('storage/' . $recipe->image) }}" alt="image de la recette actuelle" style="max-height: 200px;">
-            </p>
+            </div>
         @endif
 
         <h3>Ingrédients</h3>
         @for ($i = 0; $i < 10; $i++)
         <div class="ingredient">
-            <select name="products[]">
+            <select id="products" name="products[]">
                 <option value="">-- Choisir un produit --</option>
                 @foreach ($products as $product)
                     <option value="{{ $product->id }}"
@@ -56,14 +55,19 @@
                     </option>
                 @endforeach
             </select>
-            <input type="number" name="quantities[]"
+            <input id="quantities" type="number" name="quantities[]"
                    value="{{ isset($recipe->products[$i]) ? $recipe->products[$i]->pivot->quantity : '' }}"
                    placeholder="Quantité">
         </div>
         @endfor
-
-        <p>
+        @error('products')
+            <div>{{ $message }}</div>
+        @enderror>
+        @error('quantities')
+        <div>{{ $message }}</div>
+        @enderror>
+        <div>
             <input type="submit" name="valider" value="Valider">
-        </p>
+        </div>
     </form>
 @endsection

@@ -38,6 +38,22 @@ class RecipeController extends Controller
             'products.*' => 'nullable|integer|exists:products,id',
             'quantities.*' => 'nullable|integer|min:1',
         ]);
+        $products = $request->input('products', []);
+        $quantities = $request->input('quantities', []);
+        $validProducts = [];
+
+        $filteredProducts = array_filter($products, fn($product) => !is_null($product) && $product !== '');;
+        $filteredQuantities = array_filter($quantities, fn($value) => !is_null($value) && $value !== '');
+
+
+        foreach ($filteredProducts as $key => $product) {
+            if (isset($filteredQuantities[$key]) && $filteredQuantities[$key] >= 1) {
+                $validProducts[$product] = $filteredQuantities[$key];
+            }
+        }
+        if (count($validProducts) < 2) {
+            return back()->withErrors(['products' => 'Vous devez ajouter au moins deux ingrédients avec des quantités (minimum 1).'])->withInput();
+        }
 
         $chemin_image = 'Aucune image';
 
@@ -52,12 +68,9 @@ class RecipeController extends Controller
             'image' => $chemin_image,
         ]);
 
-        $products = $request->input('products', []);
-        $quantities = $request->input('quantities', []);
-        for ($i = 0; $i < count($products); $i++) {
-            if ($products[$i] && $quantities[$i]) {
-                $recipe->products()->attach($products[$i], ['quantity' => $quantities[$i]]);
-            }
+
+        foreach ($validProducts as $product_id => $quantity) {
+            $recipe->products()->attach($product_id, ['quantity' => $quantity]);
         }
 
         return redirect()->route('recipes.index');
